@@ -4,6 +4,7 @@ import com.hai.pojo.Park;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -23,4 +24,14 @@ public interface ParkMapper {
 
     @Select("select * from park where id=#{id}")
     Park getParkByID(int id);
+
+    @Update("update park set type=1 where name=#{name}")
+    void setType(String name);
+
+    @Update("update park set type=0 where type=1 and id not in (select park_id from item where flag=0)")
+    void updateType();
+
+
+    @Update("update park set `left` =#{left},top=#{top} where id=#{id}")
+    void updateLocation(int left,int top,int id);
 }

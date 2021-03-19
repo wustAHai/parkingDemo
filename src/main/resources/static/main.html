@@ -19,6 +19,9 @@
             cursor: pointer;
             user-select: none;
         }
+        p > span{
+            font-weight: bold;
+        }
     </style>
 </head>
 <body style="background-color: #e7e7e7">
@@ -95,6 +98,30 @@
     </div>
 </div>
 
+<!--info Modal -->
+<div class="modal fade bs-example-modal-lg"  id="infoModel"  tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title"><span>车位信息</span></h4>
+            </div>
+            <div class="modal-body">
+                <p>车位名称 : <span id="parkName1"></span></p>
+                <p>车辆牌号 : <span id="plate1"></span></p>
+                <p>车俩名称 : <span id="carname1"></span></p>
+                <p>车主姓名 : <span id="username1"></span></p>
+                <p>车主电话 : <span id="tel1"></span></p>
+                <p>开始时间 : <span id="start1"></span></p>
+                <p>停车时长 : <span id="duration1"></span>小时</p>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">知道了</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function getParks(){
         $("#map").empty();
@@ -110,7 +137,7 @@
                             if (park[key].type==0){
                                 $("#map").append("<div class='park' onclick='parkCar("+park[key].id+")' style='background-color:#5cb85c;left:"+ park[key].left +"px;"+"top:"+ park[key].top+"px;'>"+park[key].name +"</div>");
                             }else {
-                                $("#map").append("<div class='park' style='background-color:#d9534f;left:"+ park[key].left +"px;"+"top:"+ park[key].top+"px;'>"+park[key].name +"</div>");
+                                $("#map").append("<div class='park' onclick='getInfo("+park[key].id+")'    style='background-color:#d9534f;left:"+ park[key].left +"px;"+"top:"+ park[key].top+"px;'>"+park[key].name +"</div>");
                             }
                         }
                         break;
@@ -203,10 +230,68 @@
         let duration = $("#duration").val();
         let cost = $("#cost").val();
         if (checkForm(parkName,plate,carname,username,tel,duration,cost)&&duration>0&&cost>0){
-
+            $.ajax({
+                url: "/addItem",
+                type: "post",
+                dataType: "json",
+                data:{
+                    "parkName":parkName,
+                    "plate":plate,
+                    "carname":carname,
+                    "username":username,
+                    "tel":tel,
+                    "duration":duration,
+                    "cost":cost
+                },
+                success: function (data) {
+                    switch (data.code) {
+                        case 0:
+                            layer.msg(data.msg,{icon:1});
+                            $('#itemModel').modal('toggle');
+                            getParks();
+                            break;
+                        default:
+                            layer.msg(data.msg,{icon:2});
+                            break;
+                    }
+                },
+                err: function (e) {
+                    console.log(e.status);
+                    console.log(e.statusText);
+                }
+            });
         }else {
             layer.msg('检查一下表单吧');
         }
+    }
+    function getInfo(id){
+        $.ajax({
+            url: "/getInfo?t=" + (new Date()).getTime(), // 加随机数防止缓存
+            type: "get",
+            dataType: "json",
+            data:{"id":id},
+            success: function (data) {
+                switch (data.code) {
+                    case 0:
+                        $("#infoModel").modal('toggle');
+                        $("#parkName1").text(data.data.parkName);
+                        $("#plate1").text(data.data.plate);
+                        $("#carname1").text(data.data.carname);
+                        $("#tel1").text(data.data.tel);
+                        $("#duration1").text(data.data.duration);
+                        $("#username1").text(data.data.username);
+                        $("#start1").text(data.data.start);
+                        break;
+                    default:
+                        console.log(data.msg);
+                        break;
+                }
+            },
+            err: function (e) {
+                console.log(e.status);
+                console.log(e.statusText);
+            }
+        });
     }
     getParks();
 </script>

@@ -4,6 +4,7 @@ import com.hai.pojo.Car;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -22,4 +23,6 @@ public interface CarMapper {
     @Select("select * from car where plate=#{plate}")
     Car getCarByPlate(String plate);
 
+    @Update("update car set carname=#{carname},username=#{username},tel=#{tel} where plate=#{plate}")
+    void updateCar(Car car);
 }

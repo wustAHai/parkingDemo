@@ -17,4 +17,12 @@ public class CarService {
     public Car getCarByPalate(String palate){
         return  carMapper.getCarByPlate(palate);
     }
+
+    public void addCar(Car car){
+        carMapper.addCar(car);
+    }
+
+    public void updateCar(Car car){
+        carMapper.updateCar(car);
+    }
 }

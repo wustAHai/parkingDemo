@@ -60,11 +60,6 @@ public class ItemMapperTest {
         }
     }
 
-    @Test
-    public void getNumberOfItems(){
-        int p1 = itemMapper.getNumberOfItems("P1");
-        System.out.println(p1);
-    }
 
     @Test
     public void setItemsFlag(){

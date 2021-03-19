@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -45,6 +47,16 @@ public class ParkMapperTest {
     public void getParkById() {
         Park p1 = parkMapper.getParkByName("p1");
         System.out.println(p1);
+    }
+
+    @Test
+    public  void  upDateLocation (){
+        int left =340;
+        int top = 820;
+        for (int i = 41; i < 51; i++) {
+            parkMapper.updateLocation(left,top,i);
+            left+=40;
+        }
     }
 
 

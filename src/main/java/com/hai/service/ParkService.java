@@ -22,4 +22,12 @@ public class ParkService {
     public Park getParkById(int id){
        return parkMapper.getParkByID(id);
     }
+
+    public Park getParkByName(String parkName){
+        return parkMapper.getParkByName(parkName);
+    }
+
+    public void setType(String parkName){
+        parkMapper.setType(parkName);
+    }
 }
