@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>主页面</title>
+    <link href="/css/bootstrap.css" rel="stylesheet">
+    <script src="/js/JQuery3.5.1.js"></script>
+    <script src="/js/bootstrap.js"></script>
+    <script src="/js/layer.js"></script>
+    <style>
+        .park{
+            width: 30px;
+            height: 20px;
+            border: 2px silver solid;
+            position: absolute;
+            cursor: pointer;
+            user-select: none;
+        }
+    </style>
+</head>
+<body style="background-color: #e7e7e7">
+
+
+<div id="map" style="background-image: url('/img/map.png');width: 1500px;height: 1000px;margin: 0 auto;position: relative" >
+</div>
+
+<!--item Modal -->
+<div class="modal fade bs-example-modal-lg"  id="itemModel"  tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="itemLabel"><span id="itemInfo">泊车</span></h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" style="margin: 0 auto;">
+                    <div class="form-group">
+                        <label for="parkName" class="col-sm-2 control-label">车位编号</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="parkName"  disabled="disabled">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="parkRate" class="col-sm-2 control-label">费率 （元/小时）</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" id="parkRate" disabled="disabled">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="plate" class="col-sm-2 control-label">车牌号</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="plate" style="text-transform:uppercase;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="carname" class="col-sm-2 control-label">车辆描述</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="carname" >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="username" class="col-sm-2 control-label">联系人</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="username" >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="tel" class="col-sm-2 control-label">电话号码</label>
+                        <div class="col-sm-10">
+                            <input type="tel" class="form-control" id="tel" >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="duration" class="col-sm-2 control-label">停车时长 （小时）</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" id="duration">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cost" class="col-sm-2 control-label">金额 (元)</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" id="cost" >
+                        </div>
+                    </div>
+                </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="itemSend" onclick="sendItem()">生成停车</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getParks(){
+        $("#map").empty();
+        $.ajax({
+            url: "/getParks?t=" + (new Date()).getTime(), // 加随机数防止缓存
+            type: "get",
+            dataType: "json",
+            success: function (data) {
+                switch (data.code) {
+                    case 0:
+                        let park = data.data;
+                        for (let key in park){
+                            if (park[key].type==0){
+                                $("#map").append("<div class='park' onclick='parkCar("+park[key].id+")' style='background-color:#5cb85c;left:"+ park[key].left +"px;"+"top:"+ park[key].top+"px;'>"+park[key].name +"</div>");
+                            }else {
+                                $("#map").append("<div class='park' style='background-color:#d9534f;left:"+ park[key].left +"px;"+"top:"+ park[key].top+"px;'>"+park[key].name +"</div>");
+                            }
+                        }
+                        break;
+                    default:
+                        console.log(data.msg);
+                        break;
+                }
+            },
+            err: function (e) {
+                console.log(e.status);
+                console.log(e.statusText);
+            }
+        });
+    }
+    function parkCar(id){
+        console.log(id);
+        $.ajax({
+            url: "/getParkById?t=" + (new Date()).getTime(), // 加随机数防止缓存
+            type: "get",
+            dataType: "json",
+            data:{"id":id},
+            success: function (data) {
+                switch (data.code) {
+                    case 0:
+                        $("#itemModel").modal('toggle');
+                        $("#parkName").val(data.data.name);
+                        $("#parkRate").val(data.data.rate);
+                        $("#duration").unbind();
+                        $("#duration").keyup(function () {
+                           $("#cost").val($("#duration").val()*data.data.rate);
+                        });
+                        $("#plate").unbind();
+                        $("#plate").blur(function (){
+                           let plate = $("#plate").val();
+                           if (plate!=undefined){
+                               getCarByPlate(plate);
+                           }
+                        });
+                        break;
+                    default:
+                        console.log(data.msg);
+                        break;
+                }
+            },
+            err: function (e) {
+                console.log(e.status);
+                console.log(e.statusText);
+            }
+        });
+    }
+    function getCarByPlate(plate){
+        console.log(plate);
+        $.ajax({
+            url: "/getCarByPlate?t=" + (new Date()).getTime(), // 加随机数防止缓存
+            type: "get",
+            dataType: "json",
+            data:{"plate":plate},
+            success: function (data) {
+                switch (data.code) {
+                    case 0:
+                        $("#username").val(data.data.username);
+                        $("#tel").val(data.data.tel);
+                        $("#carname").val(data.data.carname);
+                        break;
+                    default:
+                        console.log(data.msg);
+                        break;
+                }
+            },
+            err: function (e) {
+                console.log(e.status);
+                console.log(e.statusText);
+            }
+        });
+    }
+    function checkForm(...args) {
+        for (let i = 0; i < args.length; i++) {
+            if (args[i]==undefined||args[i].length == 0 || args[i].trim() == '') {
+                return false;
+            }
+        }
+        return true;
+    }
+    function sendItem(){
+        let parkName= $("#parkName").val();
+        let plate = $("#plate").val();
+        let carname = $("#carname").val();
+        let username = $("#username").val();
+        let tel = $("#tel").val();
+        let duration = $("#duration").val();
+        let cost = $("#cost").val();
+        if (checkForm(parkName,plate,carname,username,tel,duration,cost)&&duration>0&&cost>0){
+
+        }else {
+            layer.msg('检查一下表单吧');
+        }
+    }
+    getParks();
+</script>
+</body>
+</html>
