@@ -30,4 +30,11 @@ public class ParkService {
     public void setType(String parkName){
         parkMapper.setType(parkName);
     }
+
+    public int[] getParkNumInfo(){
+        int[] ints = new int[2];
+        ints[0]= parkMapper.getAvailablePark();
+        ints[1]= parkMapper.getOccupiedPark();
+        return ints;
+    }
 }

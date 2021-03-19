@@ -2,6 +2,7 @@ package com.hai.service;
 
 import com.hai.mapper.AdminMapper;
 import com.hai.pojo.Admin;
+import com.hai.util.MD5Tool;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,7 @@ public class LoginService {
 
     public boolean checkLogin(Admin admin){
         Admin adminByName = adminMapper.getAdminByName(admin.getName());
-        if (adminByName==null||!adminByName.getPassword().equals(admin.getPassword())){
+        if (adminByName==null||!adminByName.getPassword().equals(MD5Tool.getMD5(admin.getPassword()))){
             return false;
         }
         return true;

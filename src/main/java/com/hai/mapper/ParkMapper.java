@@ -34,4 +34,10 @@ public interface ParkMapper {
 
     @Update("update park set `left` =#{left},top=#{top} where id=#{id}")
     void updateLocation(int left,int top,int id);
+
+    @Select("select count(*) from park where type=0")
+    int getAvailablePark();
+
+    @Select("select count(*) from park where type!=0")
+    int getOccupiedPark();
 }

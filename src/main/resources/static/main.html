@@ -25,11 +25,9 @@
     </style>
 </head>
 <body style="background-color: #e7e7e7">
-
-
+<p style="width: 1500px;background-color: white;margin:0 auto;height: 30px;line-height: 30px"><span style="color: #5cb85c" id ="span1"></span>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#d9534f" id="span2"></span></p>
 <div id="map" style="background-image: url('/img/map.png');width: 1500px;height: 1000px;margin: 0 auto;position: relative" >
 </div>
-
 <!--item Modal -->
 <div class="modal fade bs-example-modal-lg"  id="itemModel"  tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
     <div class="modal-dialog modal-lg" role="document">
@@ -124,6 +122,7 @@
 
 <script>
     function getParks(){
+        getNums();
         $("#map").empty();
         $.ajax({
             url: "/getParks?t=" + (new Date()).getTime(), // 加随机数防止缓存
@@ -284,6 +283,27 @@
                         break;
                     default:
                         console.log(data.msg);
+                        break;
+                }
+            },
+            err: function (e) {
+                console.log(e.status);
+                console.log(e.statusText);
+            }
+        });
+    }
+    function getNums(){
+        $.ajax({
+            url: "/getParkNumInfo?t"+ (new Date()).getTime(), // 加随机数防止缓存
+            type: "get",
+            dataType: "json",
+            success: function (data) {
+                switch (data.code) {
+                    case 0:
+                        $("#span1").text("可用车位数量 ："+data.data[0]);
+                        $("#span2").text("已被占用车位数量 ："+data.data[1]);
+                        break;
+                    default:
                         break;
                 }
             },

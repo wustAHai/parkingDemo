@@ -53,4 +53,11 @@ public class ParkController {
         myMessage.setData(itemService.getItemByParkId(id));
         return myMessage;
     }
+
+    @GetMapping("/getParkNumInfo")
+    public MyMessage getParkNumInfo(){
+        MyMessage myMessage = new MyMessage();
+        myMessage.setData(parkService.getParkNumInfo());
+        return myMessage;
+    }
 }
