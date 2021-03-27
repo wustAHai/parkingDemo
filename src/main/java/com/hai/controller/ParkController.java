@@ -60,4 +60,30 @@ public class ParkController {
         myMessage.setData(parkService.getParkNumInfo());
         return myMessage;
     }
+
+    @GetMapping("/getCounts")
+    public MyMessage getCounts(){
+        MyMessage myMessage = new MyMessage();
+        myMessage.setData(parkService.getCounts());
+        return myMessage;
+    }
+
+    @GetMapping("/getType2")
+    public MyMessage getType2(){
+        MyMessage myMessage = new MyMessage();
+        myMessage.setData(itemService.getType2());
+        return myMessage;
+    }
+
+    @PostMapping("/relent")
+    public MyMessage relent(int id,long duration,double cost){
+        MyMessage myMessage = new MyMessage();
+        try {
+            itemService.relent(id,duration,cost);
+        } catch (Exception e) {
+            e.printStackTrace();
+            myMessage.setCode(1);
+        }
+        return myMessage;
+    }
 }

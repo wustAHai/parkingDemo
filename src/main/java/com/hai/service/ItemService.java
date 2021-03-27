@@ -2,15 +2,14 @@ package com.hai.service;
 
 import com.hai.mapper.ItemMapper;
 import com.hai.mapper.ParkMapper;
-import com.hai.pojo.Car;
-import com.hai.pojo.Item;
-import com.hai.pojo.Park;
-import com.hai.pojo.ParkInfo;
+import com.hai.pojo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by chenz at 20:50 on 2021/3/18
@@ -45,7 +44,7 @@ public class ItemService {
             carService.updateCar(car);
         }
         parkService.setType(parkName);
-        duration = 3600*1000*duration;
+        duration = 24*3600*1000*duration;
         long  start = System.currentTimeMillis();
         Item item = new Item(0,start,duration,0,cost,car,parkByName);
         itemMapper.addItem(item);
@@ -55,16 +54,17 @@ public class ItemService {
     public ParkInfo getItemByParkId(int id){
         Item itemByParkId = itemMapper.getItemByParkId(id);
         if (itemByParkId==null){
-            return new ParkInfo("P"+id,"无","无","无","无","无","无");
+            return new ParkInfo("P"+id,"无","无","无","无","无","无","无");
         }else {
             ParkInfo parkInfo = new ParkInfo();
             parkInfo.setParkName(itemByParkId.getPark().getName());
             parkInfo.setCarname(itemByParkId.getCar().getCarname());
             parkInfo.setPlate(itemByParkId.getCar().getPlate());
             parkInfo.setTel(itemByParkId.getCar().getTel());
-            parkInfo.setDuration(itemByParkId.getDuration()/3600/1000+"");
+            parkInfo.setDuration(itemByParkId.getDuration()/3600/1000/24+"");
             parkInfo.setUsername(itemByParkId.getCar().getUsername());
             parkInfo.setStart(new Date(itemByParkId.getStart()).toLocaleString());
+            parkInfo.setEndTime(new Date(itemByParkId.getStart()+itemByParkId.getDuration()).toLocaleString());
             return parkInfo;
         }
     }
@@ -72,6 +72,32 @@ public class ItemService {
     @Transactional
     public void updateParksAndItems(){
         itemMapper.setItemsFlag(System.currentTimeMillis());
+        itemMapper.setItemsFlag2(System.currentTimeMillis());
         parkMapper.updateType();
+        parkMapper.updateType2();
+    }
+
+    public List<ItemInfo> getType2(){
+        List<Item> type2 = itemMapper.getType2();
+        List<ItemInfo> itemInfos = new ArrayList<>();
+        for (Item item :
+                type2) {
+            ItemInfo itemInfo = new ItemInfo();
+            itemInfo.setId(item.getId());
+            itemInfo.setPlate(item.getCar().getPlate());
+            itemInfo.setTel(item.getCar().getTel());
+            itemInfo.setUsername(item.getCar().getUsername());
+            itemInfo.setEndTime(new Date(item.getStart()+item.getDuration()).toLocaleString());
+            itemInfo.setParkName(item.getPark().getName());
+            itemInfos.add(itemInfo);
+        }
+        return itemInfos;
+    }
+
+    @Transactional
+    public void relent(int id,long duration,double cost){
+        duration=duration*1000*3600*24;
+        itemMapper.relent(id,duration,cost);
+        parkMapper.updatePark(id);
     }
 }

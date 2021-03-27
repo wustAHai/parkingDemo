@@ -28,9 +28,11 @@ public interface ParkMapper {
     @Update("update park set type=1 where name=#{name}")
     void setType(String name);
 
-    @Update("update park set type=0 where type=1 and id not in (select park_id from item where flag=0)")
+    @Update("update park set type=0 where type=1 and id not in (select park_id from item where flag=0 or flag=2)")
     void updateType();
 
+    @Update("update park set type=2 where type!=2 and id in (select park_id from item where flag=2)")
+    void updateType2();
 
     @Update("update park set `left` =#{left},top=#{top} where id=#{id}")
     void updateLocation(int left,int top,int id);
@@ -40,4 +42,10 @@ public interface ParkMapper {
 
     @Select("select count(*) from park where type!=0")
     int getOccupiedPark();
+
+    @Select("select count(*) from park  group by type order by type")
+    List<Integer> getCounts();
+
+    @Update("update park set type = 1 where id in (select park_id from item where id=#{id})")
+    void updatePark(int id);
 }

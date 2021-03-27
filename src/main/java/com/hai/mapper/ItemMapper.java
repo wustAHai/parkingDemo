@@ -33,10 +33,18 @@ public interface ItemMapper {
     })
     List<Item> getParkingItems();
 
-    @Update("update item set flag=1 where flag=0 and start+duration<#{cur}")
+    @Update("update item set flag=1 where (flag=0 or flag=2) and start+duration<#{cur}")
     void setItemsFlag(long cur);
 
-    @Select("select * from item where flag=0 and park_id=#{id}")
+    //剩余时间不足两天标记2
+    @Update("update item set flag=2 where flag=0 and start+duration-1000*3600*24*2<#{cur}")
+    void setItemsFlag2(long cur);
+
+    //续费恢复
+    @Update("update item set flag=0 where flag=2 and start+duration-1000*3600*24*2>#{cur}")
+    void setItemsFlag3(long cur);
+
+    @Select("select * from item where (flag=0 or flag=2) and park_id=#{id}")
     @Results(value = {
             @Result(property = "car",column = "car_plate",
                     one = @One(select = "com.hai.mapper.CarMapper.getCarByPlate")),
@@ -44,4 +52,18 @@ public interface ItemMapper {
                     one = @One(select = "com.hai.mapper.ParkMapper.getParkByID"))
     })
     Item getItemByParkId(int id);
+
+    @Select("select * from item where flag=2")
+    @Results(value = {
+            @Result(property = "car",column = "car_plate",
+                    one = @One(select = "com.hai.mapper.CarMapper.getCarByPlate")),
+            @Result(property = "park",column = "park_id",
+                    one = @One(select = "com.hai.mapper.ParkMapper.getParkByID"))
+    })
+    List<Item> getType2();
+
+
+    @Update("update item set duration=duration+#{duration},cost=cost+#{cost},flag=0 where id=#{id}")
+    void relent(int id,long duration,double cost);
+
 }

@@ -10,8 +10,98 @@
     <script src="/js/JQuery3.5.1.js"></script>
     <script src="/js/bootstrap.js"></script>
     <script src="/js/layer.js"></script>
+    <style>
+        body{
+            background-image: url('/img/bg.webp');
+            background-repeat: no-repeat;
+            height: 1080px;
+        }
+    </style>
 </head>
 <body>
-
+<div class="container">
+    <form  class="form-horizontal" style="margin: 200px auto;width:500px;padding:40px;background-color: rgba(240,240,240,0.5);border-radius: 20px" >
+        <div class="form-group">
+            <label for="username" class="col-sm-3 control-label">用户名</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="username" name="name" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="pwd" class="col-sm-3 control-label">密码</label>
+            <div class="col-sm-9">
+                <input type="password" class="form-control" id="pwd" name="password" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="checkCode" class="col-sm-3 control-label">验证码</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" id="checkCode" name="checkCode" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <img src="/checkCode" id="checkImg" alt="验证码">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <button type="submit" class="btn btn-success"  id="sub">登 录</button>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    var img = document.getElementById("checkImg");
+    img.onclick = function () {
+        img.src = "/checkCode?" + Date.now();
+    }
+    $("#sub").click(function (e){
+        e.preventDefault();
+        send();
+    })
+    function send() {
+        let name = $("#username").val();
+        let password = $("#pwd").val();
+        let checkCode = $("#checkCode").val();
+        if (checkForm(name,password,checkCode)){
+            $.ajax({
+                url: "/login",
+                type: "post",
+                dataType: "json",
+                data:{
+                    "name":name,
+                    "password":password,
+                    "checkCode":checkCode
+                },
+                success: function (data) {
+                    switch (data.code) {
+                        case 0:
+                            location.href="/main.html";
+                            break;
+                        default:
+                            layer.msg("登录失败");
+                            img.src = "/checkCode?" + Date.now();
+                            break;
+                    }
+                },
+                err: function (e) {
+                    console.log(e.status);
+                    console.log(e.statusText);
+                }
+            });
+        }else {
+            layer.msg('检查一下表单吧');
+        }
+    }
+    function checkForm(...args) {
+        for (let i = 0; i < args.length; i++) {
+            if (args[i]==undefined||args[i].length == 0 || args[i].trim() == '') {
+                return false;
+            }
+        }
+        return true;
+    }
+</script>
 </body>
 </html>

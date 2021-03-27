@@ -1,6 +1,7 @@
 package com.hai.service;
 
 import com.hai.mapper.ParkMapper;
+import com.hai.pojo.Item;
 import com.hai.pojo.Park;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,4 +38,11 @@ public class ParkService {
         ints[1]= parkMapper.getOccupiedPark();
         return ints;
     }
+
+    public List<Integer> getCounts(){
+        List<Integer> counts = parkMapper.getCounts();
+        return counts;
+    }
+
+
 }

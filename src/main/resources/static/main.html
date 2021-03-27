@@ -5,7 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>主页面</title>
+    <title>车位租赁情况</title>
     <link href="/css/bootstrap.css" rel="stylesheet">
     <script src="/js/JQuery3.5.1.js"></script>
     <script src="/js/bootstrap.js"></script>
@@ -22,9 +22,23 @@
         p > span{
             font-weight: bold;
         }
+        .ahai_active{
+            color: #337AB7!important;
+        }
     </style>
 </head>
 <body style="background-color: #e7e7e7">
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container-fluid" style="padding: 0 100px">
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="/main.html"><span class="ahai_active">车位租赁情况</span></a></li>
+                <li><a href="/count.html"><span>统计详情</span></a></li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
 <p style="width: 1500px;background-color: white;margin:0 auto;height: 30px;line-height: 30px"><span style="color: #5cb85c" id ="span1"></span>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#d9534f" id="span2"></span></p>
 <div id="map" style="background-image: url('/img/map.png');width: 1500px;height: 1000px;margin: 0 auto;position: relative" >
 </div>
@@ -34,7 +48,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="itemLabel"><span id="itemInfo">泊车</span></h4>
+                <h4 class="modal-title" id="itemLabel"><span id="itemInfo">租赁</span></h4>
             </div>
             <div class="modal-body">
                 <form class="form-horizontal" style="margin: 0 auto;">
@@ -42,12 +56,6 @@
                         <label for="parkName" class="col-sm-2 control-label">车位编号</label>
                         <div class="col-sm-10">
                             <input type="text" class="form-control" id="parkName"  disabled="disabled">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="parkRate" class="col-sm-2 control-label">费率 （元/小时）</label>
-                        <div class="col-sm-10">
-                            <input type="number" class="form-control" id="parkRate" disabled="disabled">
                         </div>
                     </div>
                     <div class="form-group">
@@ -75,7 +83,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="duration" class="col-sm-2 control-label">停车时长 （小时）</label>
+                        <label for="duration" class="col-sm-2 control-label">租赁天数</label>
                         <div class="col-sm-10">
                             <input type="number" class="form-control" id="duration">
                         </div>
@@ -111,7 +119,8 @@
                 <p>车主姓名 : <span id="username1"></span></p>
                 <p>车主电话 : <span id="tel1"></span></p>
                 <p>开始时间 : <span id="start1"></span></p>
-                <p>停车时长 : <span id="duration1"></span>小时</p>
+                <p>租赁时长 : <span id="duration1"></span>天</p>
+                <p>截至日期 : <span id="endTime"></span></p>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success btn-lg" data-dismiss="modal">知道了</button>
                 </div>
@@ -119,7 +128,6 @@
         </div>
     </div>
 </div>
-
 <script>
     function getParks(){
         getNums();
@@ -135,8 +143,10 @@
                         for (let key in park){
                             if (park[key].type==0){
                                 $("#map").append("<div class='park' onclick='parkCar("+park[key].id+")' style='background-color:#5cb85c;left:"+ park[key].left +"px;"+"top:"+ park[key].top+"px;'>"+park[key].name +"</div>");
-                            }else {
+                            }else if (park[key].type==1){
                                 $("#map").append("<div class='park' onclick='getInfo("+park[key].id+")'    style='background-color:#d9534f;left:"+ park[key].left +"px;"+"top:"+ park[key].top+"px;'>"+park[key].name +"</div>");
+                            }else {
+                                $("#map").append("<div class='park' onclick='getInfo("+park[key].id+")' style='background-color:#f0ad4e;left:"+ park[key].left +"px;"+"top:"+ park[key].top+"px;'>"+park[key].name +"</div>");
                             }
                         }
                         break;
@@ -163,11 +173,6 @@
                     case 0:
                         $("#itemModel").modal('toggle');
                         $("#parkName").val(data.data.name);
-                        $("#parkRate").val(data.data.rate);
-                        $("#duration").unbind();
-                        $("#duration").keyup(function () {
-                           $("#cost").val($("#duration").val()*data.data.rate);
-                        });
                         $("#plate").unbind();
                         $("#plate").blur(function (){
                            let plate = $("#plate").val();
@@ -280,6 +285,7 @@
                         $("#duration1").text(data.data.duration);
                         $("#username1").text(data.data.username);
                         $("#start1").text(data.data.start);
+                        $("#endTime").text(data.data.endTime);
                         break;
                     default:
                         console.log(data.msg);

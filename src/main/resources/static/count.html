@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>统计详情</title>
+    <link href="/css/bootstrap.css" rel="stylesheet">
+    <script src="/js/JQuery3.5.1.js"></script>
+    <script src="/js/bootstrap.js"></script>
+    <script src="/js/layer.js"></script>
+    <script src="/js/echarts.min.js"></script>
+    <style>
+        .ahai_active {
+            color: #337AB7 !important;
+        }
+
+        .chartContainer {
+            margin: 20px auto;
+            width: 1500px;
+            border-radius: 10px;
+            border: 1px skyblue solid;
+            background-color: white;
+            padding: 10px 20px;
+        }
+
+        tr td,tr th{
+            vertical-align: middle!important;
+            text-align:center;
+        }
+    </style>
+</head>
+<body style="background-color: #e7e7e7">
+<nav class="navbar navbar-default navbar-static-top">
+    <div class="container-fluid" style="padding: 0 100px">
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li><a href="/main.html"><span>车位租赁情况</span></a></li>
+                <li><a href="/count.html"><span class="ahai_active">统计详情</span></a></li>
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+<div class="chartContainer" id="mainChart" style="height: 400px">
+</div>
+<div class="chartContainer"  >
+    <div class="table-responsive" style="margin-top: 20px;">
+        <table class="table  table-bordered table-hover table-striped">
+            <caption style="color: #f0ad4e;font-weight: 600;font-size: 30px;text-align: center">即将到期车位详情</caption>
+            <thead style="background-color: #EEF1F5;">
+            <tr>
+                <th>车位名称</th>
+                <th>租客名称</th>
+                <th>租客电话</th>
+                <th>过期时间</th>
+                <th>续费操作</th>
+            </tr>
+            </thead>
+            <tbody id="itemList">
+            </tbody>
+        </table>
+    </div>
+    <div style="text-align: right">
+        <span>共<span id="itemCounter" style="font-weight: bold"></span>条记录</span>
+    </div>
+</div>
+<!--item Modal -->
+<div class="modal fade bs-example-modal-lg"  id="itemModel"  tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="itemLabel"><span id="itemInfo">续租</span></h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal" style="margin: 0 auto;">
+                    <div class="form-group">
+                        <label for="id" class="col-sm-2 control-label">租赁编号</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="id"  disabled="disabled">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="parkName" class="col-sm-2 control-label">车位名称</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="parkName"  disabled="disabled">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="username" class="col-sm-2 control-label">用户姓名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="username" disabled="disabled">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="duration" class="col-sm-2 control-label">续租天数</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" id="duration">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="cost" class="col-sm-2 control-label">金额 (元)</label>
+                        <div class="col-sm-10">
+                            <input type="number" class="form-control" id="cost" >
+                        </div>
+                    </div>
+                </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="itemSend" onclick="sendItem()">延长租赁</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function getCounts() {
+        $.ajax({
+            url: "/getCounts?t=" + (new Date()).getTime(), // 加随机数防止缓存
+            type: "get",
+            dataType: "json",
+            success: function (data) {
+                switch (data.code) {
+                    case 0:
+                        chartInit(data.data)
+                        break;
+                    default:
+                        console.log(data.msg);
+                        break;
+                }
+            },
+            err: function (e) {
+                console.log(e.status);
+                console.log(e.statusText);
+            }
+        });
+    }
+
+    function chartInit(data) {
+        let myChart = echarts.init(document.getElementById('mainChart'));
+
+        // 指定图表的配置项和数据
+        let option;
+
+        option = {
+            title: {
+                text: '车位租赁信息统计',
+                subtext: '',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'item'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+            },
+            color: [
+                "#5cb85c",
+                "#d9534f",
+                "#f0ad4e"
+            ],
+            series: [{
+                name: '访问来源',
+                type: 'pie',
+                radius: '50%',
+                data: [{
+                    value: data[0],
+                    name: '可用车位'
+                },
+                    {
+                        value: data[1],
+                        name: '正常使用车位'
+                    },
+                    {
+                        value: data[2],
+                        name: '即将到期车位'
+                    },
+                ],
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            }]
+        };
+
+        option && myChart.setOption(option);
+    }
+
+    function loadItem(){
+        let itemList = $("#itemList");
+        $.ajax({
+            url: "/getType2?t=" + (new Date()).getTime(), // 加随机数防止缓存
+            type: "get",
+            dataType: "json",
+            success: function (data) {
+                switch (data.code) {
+                    case 0:
+                       let list = data.data;
+                        for (let key in list) {
+                            itemList.append("<tr><td>" +list[key].parkName + "</td> <td>" + list[key].username + "</td><td>" + list[key].tel+ "</td><td>"+ list[key].endTime +  "</td><td><button class=\"btn btn-success \" onclick='relent("+list[key].id + ","+ "\"" +list[key].parkName +"\"" + ","+ "\"" +list[key].username +"\"" + ")'>续租</button> " + "</td></tr>")
+                        }
+                        $("#itemCounter").text(list.length);
+                        break;
+                    default:
+                        console.log(data.msg);
+                        break;
+                }
+            },
+            err: function (e) {
+                console.log(e.status);
+                console.log(e.statusText);
+            }
+        });
+    }
+
+    function relent(id,parkName,username){
+        $("#itemModel").modal('toggle');
+        $("#id").val(id);
+        $("#parkName").val(parkName);
+        $("#username").val(username);
+    }
+
+    function checkForm(...args) {
+        for (let i = 0; i < args.length; i++) {
+            if (args[i]==undefined||args[i].length == 0 || args[i].trim() == '') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function sendItem(){
+        let id = $("#id").val();
+        let parkName = $("#parkName").val();
+        let username = $("#username").val();
+        let duration = $("#duration").val();
+        let cost = $("#cost").val();
+        if (checkForm(id,parkName,username,duration,cost)&&duration>0&&cost>0){
+            $.ajax({
+                url: "/relent",
+                type: "post",
+                dataType: "json",
+                data:{
+                    "id":id,
+                    "duration":duration,
+                    "cost":cost
+                },
+                success: function (data) {
+                    switch (data.code) {
+                        case 0:
+                            layer.msg("续租成功,请刷新页面");
+                            $("#itemModel").modal("toggle");
+                            break;
+                        default:
+                            layer.msg("续租失败");
+                            break;
+                    }
+                },
+                err: function (e) {
+                    console.log(e.status);
+                    console.log(e.statusText);
+                }
+            });
+        }else {
+            layer.msg("检查下表单吧");
+        }
+    }
+
+    getCounts();
+    loadItem();
+
+</script>
+</body>
+</html>

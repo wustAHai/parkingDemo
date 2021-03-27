@@ -5,18 +5,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Created by chenz at 14:06 on 2021/3/19
+ * Created by chenz at 10:10 on 2021/3/27
  */
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class ParkInfo {
+@NoArgsConstructor
+public class ItemInfo {
+    private int id;
     private String parkName;
     private String plate;
-    private String carname;
-    private String tel;
-    private String start;
-    private String duration;
     private String username;
+    private String tel;
     private String endTime;
 }
