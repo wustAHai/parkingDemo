@@ -25,6 +25,6 @@ public class UpdateTaskListener implements ServletContextListener {
         Timer timer = new Timer();
         UpdateTask updateTask = new UpdateTask();
         updateTask.setItemService(itemService);
-        timer.schedule(updateTask,0,100000);//100秒更新一次数据库
+        timer.schedule(updateTask,0,10000);//100秒更新一次数据库
     }
 }

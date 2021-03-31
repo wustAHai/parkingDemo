@@ -28,7 +28,7 @@ public interface ParkMapper {
     @Update("update park set type=1 where name=#{name}")
     void setType(String name);
 
-    @Update("update park set type=0 where type=1 and id not in (select park_id from item where flag=0 or flag=2)")
+    @Update("update park set type=0 where (type=1 or type=2) and id not in (select park_id from item where flag=0 or flag=2)")
     void updateType();
 
     @Update("update park set type=2 where type!=2 and id in (select park_id from item where flag=2)")

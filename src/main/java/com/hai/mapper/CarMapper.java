@@ -23,6 +23,6 @@ public interface CarMapper {
     @Select("select * from car where plate=#{plate}")
     Car getCarByPlate(String plate);
 
-    @Update("update car set carname=#{carname},username=#{username},tel=#{tel} where plate=#{plate}")
+    @Update("update car set carname=#{carname},username=#{username},tel=#{tel} where plate=#{pla.te}")
     void updateCar(Car car);
 }
